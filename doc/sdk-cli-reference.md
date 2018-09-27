@@ -147,6 +147,9 @@ generates a default directory layout based on the input `project-name`.
 
 * `--api-version` **(required)** string - Kubernetes apiVersion and has a format of `$GROUP_NAME/$VERSION` (e.g app.example.com/v1alpha1)
 * `--kind` **(required)** string - Kubernetes CustomResourceDefintion kind. (e.g AppService)
+* `--type` string - Type of Operator to initialize (e.g `ansible`) (default `go`)
+* `--generate-playbook` boolean - Generate a playbook skeleton (Only used for --type ansible)
+* `--skip-git-init` boolean - Do not init the directory as a git repository
 * `-h, --help` - help for new
 
 ### Example
@@ -159,6 +162,29 @@ operator-sdk new app-operator --api-version=app.example.com/v1alpha1 --kind=AppS
 # Output:
 Create app-operator/.gitignore
 ...
+```
+
+```bash
+mkdir $GOPATH/src/github.com/example.com/
+cd $GOPATH/src/github.com/example.com/
+operator-sdk new ansible-operator --api-version=ansible.example.com/v1alpha1 --kind=AnsibleService --type=ansible
+
+# Output:
+Create ansible-operator/tmp/init/galaxy-init.sh
+Create ansible-operator/tmp/build/Dockerfile                          
+Create ansible-operator/tmp/build/test-framework/Dockerfile           
+Create ansible-operator/tmp/build/go-test.sh                          
+Rendering Ansible Galaxy role [ansible-operator/roles/AnsibleService]...                                                                     
+Cleaning up ansible-operator/tmp/init                                 
+Create ansible-operator/watches.yaml                                  
+Create ansible-operator/deploy/rbac.yaml                              
+Create ansible-operator/deploy/crd.yaml                               
+Create ansible-operator/deploy/cr.yaml                                
+Create ansible-operator/deploy/sa.yaml                                
+Create ansible-operator/deploy/operator.yaml                          
+Run git init ...                   
+Initialized empty Git repository in /home/dymurray/src/github.com/dymurray/opsdk/ansible-operator/.git/                                      
+Run git init done 
 ```
 
 ## test
