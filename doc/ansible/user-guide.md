@@ -52,34 +52,36 @@ To learn more about the project directory structure, see [project layout][layout
 For this example the memcached-operator will execute the following reconciliation logic for each `Memcached` CR:
 - Create a memcached Deployment if it doesn't exist
 - Ensure that the Deployment size is the same as specified by the `Memcached` CR spec
-- Update the `Memcached` CR status with the names of the memcached pods
 
 ### Watch the Memcached CR
 
-By default, the memcached-operator watches `Memcached` resource events as shown in `cmd/memcached-operator/main.go`.
+By default, the memcached-operator watches `Memcached` resource events as shown in `watches.yaml`:
 
-```Go
-func main() {
-  sdk.Watch("cache.example.com/v1alpha1", "Memcached", "default", time.Duration(5)*time.Second)
-  sdk.Handle(stub.NewHandler())
-  sdk.Run(context.TODO())
-}
+```yaml
+---
+- version: v1alpha1
+  group: cache.example.com
+  kind: Memcached
 ```
 
 #### Options
-**Worker Count**
-The number of concurrent informer workers can be configured with an additional Watch option. The default value is 1 if an argument is not given.
-```Go
-sdk.Watch("cache.example.com/v1alpha1", "Memcached", "default", time.Duration(5)*time.Second, sdk.WithNumWorkers(n))
+**Role**
+Specifying a `role` option in `watches.yaml` will use the specified path when launching `ansible-runner` with argument `--role`
+```yaml
+---
+- version: v1alpha1
+  group: cache.example.com
+  kind: Memcached
+  role: /opt/ansible/roles/Memcached
 ```
 
-**Label Selector**
-Label selectors allow the watch to filter resources by kubernetes labels. It can be specified using the standard kubernetes label selector format:
-
-https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-
-```Go
-sdk.Watch("cache.example.com/v1alpha1", "Memcached", "default", time.Duration(5)*time.Second, sdk.WithLabelSelector("app=myapp"))
+**Playbook**
+```yaml
+---
+- version: v1alpha1
+  group: cache.example.com
+  kind: Memcached
+  playbook: /opt/ansible/playbook.yaml
 ```
 
 ### Define the Memcached spec and status
