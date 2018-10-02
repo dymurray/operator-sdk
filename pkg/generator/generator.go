@@ -179,6 +179,12 @@ func (g *Generator) renderAnsibleOperator() error {
 	if err := g.renderTmp(); err != nil {
 		return err
 	}
+	if err := g.renderConfig(); err != nil {
+		return err
+	}
+	if err := g.renderCmd(); err != nil {
+		return err
+	}
 	if err := g.renderRole(); err != nil {
 		return err
 	}
@@ -186,6 +192,9 @@ func (g *Generator) renderAnsibleOperator() error {
 		return err
 	}
 	if err := g.renderPlaybook(); err != nil {
+		return err
+	}
+	if err := g.renderGoDep(); err != nil {
 		return err
 	}
 	return g.renderDeploy()
@@ -297,10 +306,11 @@ func (g *Generator) renderGoDep() error {
 
 func (g *Generator) renderCmd() error {
 	cpDir := filepath.Join(g.projectName, cmdDir, g.projectName)
-	return renderCmdFiles(cpDir, g.repoPath, g.apiVersion, g.kind)
+	return renderCmdFiles(cpDir, g.repoPath, g.apiVersion, g.kind, g.operatorType)
 }
 
-func renderCmdFiles(cmdProjectDir, repoPath, apiVersion, kind string) error {
+func renderCmdFiles(cmdProjectDir, repoPath, apiVersion, kind, operatorType string) error {
+	var mainTmplName string
 	td := tmplData{
 		OperatorSDKImport: sdkImport,
 		StubImport:        filepath.Join(repoPath, stubDir),
@@ -309,8 +319,14 @@ func renderCmdFiles(cmdProjectDir, repoPath, apiVersion, kind string) error {
 		APIVersion:        apiVersion,
 		Kind:              kind,
 	}
+	switch operatorType {
+	case ansibleOperatorType:
+		mainTmplName = mainAnsibleTmpl
+	case goOperatorType:
+		mainTmplName = mainGoTmpl
+	}
 
-	return renderWriteFile(filepath.Join(cmdProjectDir, main), "cmd/<projectName>/main.go", mainTmpl, td)
+	return renderWriteFile(filepath.Join(cmdProjectDir, main), "cmd/<projectName>/main.go", mainTmplName, td)
 }
 
 func (g *Generator) renderConfig() error {
@@ -478,8 +494,12 @@ func (g *Generator) renderTmp() error {
 			return err
 		}
 	case ansibleOperatorType:
+		cDir := filepath.Join(g.projectName, codegenDir)
 		iDir := filepath.Join(g.projectName, initDir)
 		if err := renderInitFiles(iDir, g.repoPath, g.projectName, g.kind); err != nil {
+			return err
+		}
+		if err := renderCodegenFiles(cDir, g.repoPath, apiDirName(g.apiVersion), version(g.apiVersion), g.projectName); err != nil {
 			return err
 		}
 	}

@@ -90,8 +90,8 @@ func newFunc(cmd *cobra.Command, args []string) {
 	if err != nil {
 		cmdError.ExitWithError(cmdError.ExitError, fmt.Errorf("failed to create project %v: %v", projectName, err))
 	}
+	pullDep()
 	if operatorType == goOperatorType {
-		pullDep()
 		generate.K8sCodegen(projectName)
 	}
 	initGit()
